@@ -31,12 +31,12 @@ jobs:
       - name: Install
         run: poetry install
 
-      - name: Run Tests
+      - name: Tests
         run: poetry run pytest --verbose
 
       - uses: actions/checkout@v2
 
-      - name: Run build on arm
+      - name: Build on arm
         uses: pguyot/arm-runner-action@v1
         with:
           commands: |
