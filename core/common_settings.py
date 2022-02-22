@@ -16,28 +16,28 @@ class CommonSettings:
     def values(self) -> dict:
         return self._values
 
-    def save(self):
+    def save(self, path="../.."):
         try:
-            makedirs(f'../../BOB_CONFIG/{self.__name}', exist_ok=True)
-            with open(f'../../BOB_CONFIG/{self.__name}/config.json', 'w') as json_file:
+            makedirs(f'{path}/BOB_CONFIG/{self.__name}', exist_ok=True)
+            with open(f'{path}/BOB_CONFIG/{self.__name}/config.json', 'w') as json_file:
                 json.dump(self._values, json_file)
         except Exception as e:
             print(e)
 
-    def load(self):
+    def load(self, path="../.."):
         try:
-            makedirs(f'../../BOB_CONFIG/{self.__name}', exist_ok=True)
-            with open(f'../../BOB_CONFIG/{self.__name}/config.json') as json_file:
+            makedirs(f'{path}/BOB_CONFIG/{self.__name}', exist_ok=True)
+            with open(f'{path}/BOB_CONFIG/{self.__name}/config.json') as json_file:
                 self._values = json.load(json_file)
         except Exception as e:
             print(e)
 
-    def new_settings(self, settings: dict):
+    def new_settings(self, settings: dict, path = "../.."):
         updated = False
         for s in self._values:
             if settings.__contains__(s):
                 self._values[s] = settings[s]
                 updated = True
         if updated:
-            self.save()
+            self.save(path)
         return updated
