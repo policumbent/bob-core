@@ -1,20 +1,34 @@
 import re
 
-# todo add other imports
 from .alert import AlertPriority
+from .bikeData import BikeData
+from .common_settings import CommonSettings
+from .message import Message
+from .mqtt import Mqtt
+from .sensor import Sensor
 from .weatherData import WeatherData
 
-with open('pyproject.toml', 'r') as f:
-    __version__ = re.search(r'^version\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
 __all__ = [
+    # module import
     'alert',
-    'AlertPriority'
     'bikeData',
     'common_settings',
     'message',
     'mqtt',
     'sensor',
     'weatherData',
-    'WeatherData'
+
+    # class import 
+    'AlertPriority',
+    'BikeData',
+    'CommonSettings',
+    'Message',
+    'Mqtt',
+    'Sensor',
+    'WeatherData',
 ]
+
+
+with open('pyproject.toml', 'r') as f:
+    __version__ = re.search(r'^version\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
