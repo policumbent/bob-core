@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bob-core"
+name = "policumbent-bob-core"
 version = "0.1.0"
 description = "BOB common files"
 authors = ["Stefano Loscalzo <stefano.loscalzo@gmail.com>", "Gabriele Belluardo <gabriele.belluardo@outlook.it>"]
