@@ -39,4 +39,5 @@ jobs:
           commands: |
             apt-get install -y --no-install-recommends python3-pip && pip3 install poetry
             poetry install --no-dev
-            poetry publish --build --dry-run
+            poetry build
+            poetry publish --dry-run
