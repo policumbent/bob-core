@@ -40,4 +40,4 @@ jobs:
             apt-get install -y --no-install-recommends python3-pip && pip3 install poetry
             poetry install --no-dev
             poetry build
-            poetry publish --dry-run
+            poetry publish -u __token__ -p  ${{ secrets.PYPI_TOKEN }} --dry-run
