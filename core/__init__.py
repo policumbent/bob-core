@@ -30,5 +30,8 @@ __all__ = [
 ]
 
 
-with open('pyproject.toml', 'r') as f:
-    __version__ = re.search(r'^version\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
+try:
+    with open('pyproject.toml', 'r') as f:
+        __version__ = re.search(r'^version\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
+except FileNotFoundError:
+    __version__ = "0.1.0"
