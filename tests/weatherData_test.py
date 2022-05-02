@@ -1,5 +1,3 @@
-import pytest
-
 from core import WeatherData
 
 FAKE_WEATHER = {
@@ -11,7 +9,7 @@ FAKE_WEATHER = {
     "pressure": 10.10,
     "windDirection": 10.10,
     "latitude": 10.10,
-    "longitude": 10.10
+    "longitude": 10.10,
 }
 
 
