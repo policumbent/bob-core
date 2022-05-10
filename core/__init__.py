@@ -10,6 +10,7 @@ from .weatherData import WeatherData
 from .log import log
 
 from .exceptions import *
+from .database import *
 
 __all__ = [
     # module import
@@ -20,7 +21,8 @@ __all__ = [
     "mqtt",
     "sensor",
     "weatherData",
-    "exceptions"
+    "exceptions",
+    "database"
     # class import
     "AlertPriority",
     "BikeData",
