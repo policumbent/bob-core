@@ -6,4 +6,4 @@ __pycache__
 dist
 tests/BOB_CONFIG
 poetry.lock
-*.db
+database.db

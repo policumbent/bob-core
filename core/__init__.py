@@ -1,6 +1,5 @@
 import re
 
-from .alert import AlertPriority
 from .bikeData import BikeData
 from .common_settings import CommonSettings
 from .message import Message
@@ -8,13 +7,12 @@ from .mqtt import Mqtt
 from .sensor import Sensor
 from .weatherData import WeatherData
 from .log import log
+from .database import *
 
 from .exceptions import *
-from .database import *
 
 __all__ = [
     # module import
-    "alert",
     "bikeData",
     "common_settings",
     "message",
@@ -24,7 +22,6 @@ __all__ = [
     "exceptions",
     "database"
     # class import
-    "AlertPriority",
     "BikeData",
     "CommonSettings",
     "Message",
