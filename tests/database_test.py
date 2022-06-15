@@ -1,7 +1,8 @@
 import pytest
 
+from datetime import datetime
 from core.database import Database, SqliteType
-from core.exceptions import DatabaseError, DatabaseInfoError
+from core.exceptions import *
 
 
 class TestDatabase:
@@ -10,22 +11,29 @@ class TestDatabase:
     ) -> None:
         self.db = Database(table="test", path=":memory:", max_pending=1)
 
-        self.data = ("ciao", 1, 1.0)
-        self.wrong_data = ("ciao", "ciao", 1, 1.0)
+        self.data = (datetime.now().timestamp(), "ciao", 1, 1.0)
+        self.wrong_data = (datetime.now().timestamp(), "ciao", "ciao", 1, 1.0)
 
         # create a test table
         self.db._db.execute(
-            "CREATE TABLE test(str_field TEXT, int_field INTEGER, float_field REAL)"
+            "CREATE TABLE test(timestamp DATETIME, str_field TEXT, int_field INTEGER, float_field REAL)"
         )
 
     def test_table_info(self):
         info = self.db._table_info()
 
-        assert info["names"] == ["str_field", "int_field", "float_field"]
+        assert info["names"] == ["timestamp", "str_field", "int_field", "float_field"]
         assert info["types"] == [
+            SqliteType("datetime"),
             SqliteType("text"),
             SqliteType("integer"),
             SqliteType("real"),
+        ]
+        assert info["types"] == [
+            float(),
+            str(),
+            int(),
+            float(),
         ]
 
     def test_table_info_fail(self):
@@ -49,7 +57,7 @@ class TestDatabase:
         assert self.db._check_insert_data("test", [1, 1, 1]) == False
 
     def test_check_insert_data_dict(self):
-        keys = ["str_field", "int_field", "float_field"]
+        keys = ["timestamp", "str_field", "int_field", "float_field"]
         data = dict()
         for i, k in enumerate(keys):
             data.update({k: self.data[i]})
@@ -65,12 +73,39 @@ class TestDatabase:
         assert self.db._check_insert_data("test", wrong_data) == False
 
         # wrong type of `str_filed`, must be `str` is `int`
-        wrong_type_data = {"str_field": 12, "int_field": 1, "float_field": 1.0}
+        wrong_type_data = {
+            "timestamp": 1.001,
+            "str_field": 12,
+            "int_field": 1,
+            "float_field": 1.0,
+        }
         assert self.db._check_insert_data("test", wrong_type_data) == False
 
         # wrong type of `float_filed`, must be `float` is `int`
-        wrong_type_data = {"str_field": 12, "int_field": 1, "float_field": 1}
+        wrong_type_data = {
+            "timestamp": 1.001,
+            "str_field": "ciao",
+            "int_field": 1,
+            "float_field": 1,
+        }
         assert self.db._check_insert_data("test", wrong_type_data) == False
+
+    def test_insert_data(self):
+        d = self.data
+
+        self.db.insert_data(d)
+        read = self.db.select()
+
+        assert read == [d]
+
+    def test_insert_data_fail(self):
+        # generic exception due error table parameter
+        with pytest.raises(DatabaseError):
+            self.db.insert_data()
+
+        # data format is wrong
+        with pytest.raises(DatabaseDataError):
+            self.db.insert_data(self.wrong_data)
 
     def test_insert(self):
         d = self.data
@@ -84,5 +119,25 @@ class TestDatabase:
         assert data == [d, d, d, d, d]
 
     def test_insert_fail(self):
+        # generic exception due error table parameter
         with pytest.raises(DatabaseError):
+            self.db.insert(data=self.wrong_data)
+
+        # data format is wrong
+        with pytest.raises(DatabaseDataError):
             self.db.insert("test", data=self.wrong_data)
+
+    def test_range_select(self):
+        self.db._db.execute("CREATE TABLE range(id INTEGER, value REAL)")
+
+        for i in range(15):
+            self.db.insert("range", data=(i, 12.22))
+
+        read = self.db.select(table="range", range_=(1, 3))
+        assert len(read) == 3
+
+        read = self.db.select(table="range", range_=(10, 13))
+        assert len(read) == 4
+
+        read = self.db.select(table="range", range_=(2, 13))
+        assert len(read) == 12

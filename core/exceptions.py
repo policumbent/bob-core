@@ -16,3 +16,10 @@ class DatabaseInfoError(DatabaseError):
 
     def __init__(self, table: str = None, _message=__DEFAULT_MESSAGE):
         CoreError.__init__(self, _message.format(table))
+
+
+class DatabaseDataError(DatabaseError):
+    __DEFAULT_MESSAGE = "Unable to insert data into database"
+
+    def __init__(self, _message=__DEFAULT_MESSAGE):
+        CoreError.__init__(self, _message)

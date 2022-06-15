@@ -22,12 +22,17 @@ class SqliteType:
             return True
         elif self._value == "real" and isinstance(__x, float):
             return True
+        elif self._value == "datetime" and isinstance(__x, float):
+            return True
         elif self._value == "blob" and isinstance(__x, bytes):
             return True
         elif self._value == "any":
             return True
         else:
             return False
+
+    def __str__(self) -> str:
+        return self._value
 
 
 class Database:
@@ -121,10 +126,10 @@ class Database:
         """
 
         if self._table is None or data is None:
-            return
+            raise exceptions.DatabaseError
 
         if not self._check_insert_data(self._table, data):
-            raise exceptions.DatabaseError
+            raise exceptions.DatabaseDataError
 
         self.insert(self._table, data)
 
@@ -138,7 +143,7 @@ class Database:
         """
 
         if table is None or data is None:
-            return
+            raise exceptions.DatabaseError
 
         # fill the query with the qmark
         values = ",".join(["?"] * len(data))
@@ -146,13 +151,15 @@ class Database:
         try:
             self._db.execute(f"INSERT INTO {table} VALUES ({values})", data)
         except sqlite3.OperationalError as e:
-            raise exceptions.DatabaseError(e)
+            raise exceptions.DatabaseDataError(e)
 
         # evaluate commit if there are enough pending changes
         self._commit()
 
     def select(self, table: str = None, range_: tuple = None) -> list:
-        """Read a range of rows of the table, if a range is not provided return the entire table
+        """Read a range of rows of the table, if a range is not provided return the entire table.
+
+        **Range need a table with and `id` field**
 
         :param table: name of the table to read
         :param range: inclusive range of value to read in the form `(start, end)`[default=None]
@@ -161,11 +168,18 @@ class Database:
         if table is None:
             table = self._table
 
+        # normal select for all values
+
         if range_ is None:
             return self._db.execute(f"SELECT * FROM {table}").fetchall()
-        elif isinstance(range_, tuple) and len(range_) == 2:
-            start, end = range_
 
-            return self._db.execute(
-                f"SELECT * FROM {table} WHERE id >= {start} AND id <= {end}"
-            ).fetchall()
+        # using range for values
+
+        if not isinstance(range_, tuple) and len(range_) != 2:
+            raise exceptions.DatabaseError
+
+        start, end = range_
+
+        return self._db.execute(
+            f"SELECT * FROM {table} WHERE id >= {start} AND id <= {end}"
+        ).fetchall()
