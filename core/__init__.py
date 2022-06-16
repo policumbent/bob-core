@@ -8,6 +8,7 @@ from .sensor import Sensor
 from .weatherData import WeatherData
 from .log import log
 from .database import *
+from .time import *
 
 from .exceptions import *
 
@@ -20,7 +21,8 @@ __all__ = [
     "sensor",
     "weatherData",
     "exceptions",
-    "database"
+    "database",
+    "time"
     # class import
     "BikeData",
     "CommonSettings",

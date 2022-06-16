@@ -1,8 +1,9 @@
 import pytest
 
-from datetime import datetime
+
 from core.database import Database, SqliteType
 from core.exceptions import *
+from core.time import time
 
 
 class TestDatabase:
@@ -11,8 +12,8 @@ class TestDatabase:
     ) -> None:
         self.db = Database(table="test", path=":memory:", max_pending=1)
 
-        self.data = (datetime.now().timestamp(), "ciao", 1, 1.0)
-        self.wrong_data = (datetime.now().timestamp(), "ciao", "ciao", 1, 1.0)
+        self.data = (time.human_timestamp(), "ciao", 1, 1.0)
+        self.wrong_data = (time.human_timestamp(), "ciao", "ciao", 1, 1.0)
 
         # create a test table
         self.db._db.execute(
@@ -30,7 +31,7 @@ class TestDatabase:
             SqliteType("real"),
         ]
         assert info["types"] == [
-            float(),
+            str(),
             str(),
             int(),
             float(),
@@ -74,7 +75,7 @@ class TestDatabase:
 
         # wrong type of `str_filed`, must be `str` is `int`
         wrong_type_data = {
-            "timestamp": 1.001,
+            "timestamp": "1.001",
             "str_field": 12,
             "int_field": 1,
             "float_field": 1.0,
@@ -83,7 +84,7 @@ class TestDatabase:
 
         # wrong type of `float_filed`, must be `float` is `int`
         wrong_type_data = {
-            "timestamp": 1.001,
+            "timestamp": "1.001",
             "str_field": "ciao",
             "int_field": 1,
             "float_field": 1,
