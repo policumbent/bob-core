@@ -1,9 +1,8 @@
 import pytest
 
 
-from core.database import Database, SqliteType
+from core import Database, SqliteType, time
 from core.exceptions import *
-from core.time import time
 
 
 class TestDatabase:

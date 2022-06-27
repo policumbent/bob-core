@@ -1,4 +1,4 @@
-from core.time import time
+from core import time
 
 
 def test_human_to_unix():

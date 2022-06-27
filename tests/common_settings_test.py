@@ -1,6 +1,6 @@
 import os
 import shutil
-from core import CommonSettings
+from core.common_settings import CommonSettings
 
 VALUES = {
     "pippo": 3,

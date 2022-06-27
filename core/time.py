@@ -1,7 +1,6 @@
 import time as pytime
 
-from datetime import datetime as dt
-from datetime import timezone as tz
+from datetime import datetime as dt, timezone as tz
 
 
 class time:

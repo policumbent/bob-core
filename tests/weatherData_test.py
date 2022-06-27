@@ -1,4 +1,4 @@
-from core import WeatherData
+from core.weatherData import WeatherData
 
 FAKE_WEATHER = {
     "stationId": 10,
