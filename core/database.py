@@ -109,7 +109,7 @@ class Database:
         if isinstance(data, dict) and names != list(data.keys()):
             return False
 
-        # type data check, it use `SqliteType` to make a fast compare
+        # type data check, it uses `SqliteType` to make a fast compare
         if isinstance(data, dict):
             values = list(data.values())
             return all((t == values[i] for i, t in enumerate(types)))
