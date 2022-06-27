@@ -4,7 +4,7 @@ import json
 import abc
 from .common_settings import CommonSettings
 from .message import Message
-from .alert import Alert
+# from .alert import Alert
 
 
 class Mqtt:
@@ -97,7 +97,7 @@ class Mqtt:
         self.mqtt_client.publish(status_topic, json.dumps(message.values), retain=True)
 
     """ > Un sensore pubblica un json con l'alert che vuole mandare """
-    def publish_alert(self, message: Alert) -> None:
+    def publish_alert(self, message) -> None:
         status_topic = 'alerts/{}'.format(self.name)
         self.mqtt_client.publish(status_topic, json.dumps(message.values), retain=True)
 

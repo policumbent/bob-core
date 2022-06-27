@@ -2,7 +2,7 @@
 name = "policumbent-bob-core"
 version = "0.1.0.post1"
 description = "BOB common files"
-authors = ["Stefano Loscalzo <stefano.loscalzo@gmail.com>", "Gabriele Belluardo <gabriele.belluardo@outlook.it>"]
+authors = ["Gabriele Belluardo <gabriele.belluardo@outlook.it>", "Stefano Loscalzo <stefano.loscalzo@gmail.com>"]
 license = "LGPL-3.0-or-later"
 packages = [
     { include = "core" },
@@ -16,7 +16,7 @@ colorama = "^0.4.4"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.12.2"
-pytest = "^6.2.5"
+pytest = "^7.1.2"
 black = "^22.3.0"
 
 [build-system]
