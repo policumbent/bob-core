@@ -40,9 +40,11 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build on arm
-        uses: pguyot/arm-runner-action@v1
+        uses: pguyot/arm-runner-action@v2
         with:
+          base_image: https://downloads.raspberrypi.org/raspios_oldstable_armhf/images/raspios_oldstable_armhf-2022-04-07/2022-04-04-raspios-buster-armhf.img.xz
           commands: |
-            apt-get install -y --no-install-recommends python3-pip && pip3 install poetry
+            apt-get install -y --no-install-recommends python3-pip
+            pip3 install poetry
             poetry install --no-dev
             poetry build
