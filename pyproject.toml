@@ -9,9 +9,6 @@ packages = [
     { include = "core/**/*.py" },
 ]
 
-[tool.poetry.scripts]
-dev_mqtt = "core.mqtt:entry_point"
-
 [tool.poetry.dependencies]
 python = "^3.7.3"
 colorama = "^0.4.4"
@@ -21,6 +18,7 @@ asyncio-mqtt = "^0.12.1"
 pylint = "^2.12.2"
 pytest = "^7.1.2"
 black = "^22.3.0"
+pytest-asyncio = "^0.19.0"
 
 [build-system]
 requires = ["setuptools", "poetry-core>=1.0.0"]
