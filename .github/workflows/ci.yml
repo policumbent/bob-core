@@ -26,7 +26,7 @@ jobs:
       - name: Start Mosquitto
         uses: namoshek/mosquitto-github-action@v1
         with:
-          version: "1.6"
+          version: "latest"
           ports: "1883:1883 8883:8883"
           container-name: "mqtt"
 
