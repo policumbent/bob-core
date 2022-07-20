@@ -66,7 +66,7 @@ class Mqtt:
         :param sensor: specific sensor of the module, can be of the format <module>/<sensor>
         """
 
-        if isinstance(data, int) or isinstance(data, float):
+        if not isinstance(data, str):
             data = str(data)
 
         await self.publish(f"sensors/{sensor}", data)

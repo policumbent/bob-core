@@ -5,7 +5,6 @@ import pytest
 from core import Mqtt
 from core.mqtt import Message
 
-broker = "localhost"
 run_local = not os.getenv("CI")
 pytest_plugins = "pytest_asyncio"
 
@@ -15,7 +14,7 @@ pytest_plugins = "pytest_asyncio"
     run_local, reason="This test can be run only with an active mqtt broker"
 )
 async def test_mqtt_publish():
-    async with Mqtt("localhost") as client:
+    async with Mqtt() as client:
         for i in range(4):
             await client.publish(f"test_topic/ciao{i}", f"test{i}")
 
@@ -28,12 +27,12 @@ async def test_mqtt_subscribe():
     async def publisher(num_msg):
         await asyncio.sleep(1)
 
-        async with Mqtt("localhost") as client:
+        async with Mqtt() as client:
             for i in range(num_msg):
                 await client.publish("test_topic/test", f"test{i}")
 
     async def subscriber(num_msg, count=0):
-        async with Mqtt("localhost") as client:
+        async with Mqtt() as client:
             message_loop = await client.subscribe(f"test_topic")
             async with message_loop as messages:
                 async for msg in messages:
@@ -54,7 +53,7 @@ async def test_mqtt_subscribe():
     run_local, reason="This test can be run only with an active mqtt broker"
 )
 async def test_mqtt_sensor_publish():
-    async with Mqtt("localhost") as client:
+    async with Mqtt() as client:
         await client.sensor_publish(f"ant", 12)
         await client.sensor_publish(f"ant", 12.3)
         await client.sensor_publish(f"ant", "12.4")
@@ -70,7 +69,7 @@ async def test_mqtt_sensor_subscribe():
     async def publisher(num_msg):
         await asyncio.sleep(1)
 
-        async with Mqtt("localhost") as client:
+        async with Mqtt() as client:
 
             for _ in range(num_msg // 4):
                 await client.sensor_publish(sensors[0], 12)
@@ -79,7 +78,7 @@ async def test_mqtt_sensor_subscribe():
                 await client.sensor_publish(sensors[3], "hola")
 
     async def subscriber(num_msg, count=0):
-        async with Mqtt("localhost") as client:
+        async with Mqtt() as client:
             message_loop = await client.sensor_subscribe(sensors)
             async with message_loop as messages:
                 async for msg in messages:
