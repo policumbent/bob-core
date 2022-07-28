@@ -183,3 +183,26 @@ class Database:
         return self._db.execute(
             f"SELECT * FROM {table} WHERE id >= {start} AND id <= {end}"
         ).fetchall()
+
+    def config(self, module: str = None) -> dict:
+        """Retrive the configuration of the bike, this always return the `global` configuration
+
+        :param module: identify the configuration of the module"""
+
+        # global config
+        config = eval(
+            self._db.execute(
+                f'SELECT value FROM configuration WHERE module == "global"'
+            ).fetchone()[0]
+        )
+
+        if module:
+            module_conf = eval(
+                self._db.execute(
+                    f'SELECT value FROM configuration WHERE module == "{module}"'
+                ).fetchone()[0]
+            )
+
+            config.update(module_conf)
+
+        return config

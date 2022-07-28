@@ -141,3 +141,23 @@ class TestDatabase:
 
         read = self.db.select(table="range", range_=(2, 13))
         assert len(read) == 12
+
+    def test_config(self):
+        g_conf = {"name": "phoenix", "circunference": 1450}
+        v_conf = {"grid": False, "zoom": 0, "track_len": 8000}
+
+        self.db._db.execute("CREATE TABLE configuration(module STR, value BLOB)")
+        self.db._db.execute(
+            "INSERT INTO configuration VALUES (?, ?)",
+            ["global", str(g_conf)],
+        )
+        self.db._db.execute(
+            "INSERT INTO configuration VALUES (?, ?)",
+            ["video", str(v_conf)],
+        )
+
+        conf = self.db.config()
+        video = self.db.config("video")
+
+        assert conf == g_conf
+        assert video == {**g_conf, **v_conf}
