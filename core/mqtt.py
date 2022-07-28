@@ -1,189 +1,129 @@
-from typing import List
-import paho.mqtt.client as mqtt
-import json
-import abc
-from .common_settings import CommonSettings
-from .message import Message
-# from .alert import Alert
+from asyncio_mqtt import Client
 
 
 class Mqtt:
+    """Class for modules IPC with mqtt message broker"""
+
+    _DEFAULT_HOSTNAME = "localhost"
+    _DEFAULT_PORT = 1883
+
     def __init__(
-            self,
-            broker_ip: str,
-            port: int,
-            name: str,
-            signal_list: List[str],
-            settings: CommonSettings,
-            message_handler
+        self,
+        hostname=_DEFAULT_HOSTNAME,
+        port=_DEFAULT_PORT,
+        username=None,
+        password=None,
     ):
-        self.name = name
-        self.settings = settings
-        self.message_handler = message_handler
-        self.signal_list = signal_list
-        self.mqtt_client = mqtt.Client()
-        self.mqtt_client.on_connect = self.on_connect
-        self.mqtt_client.on_message = self.on_message
-        self.mqtt_client.on_log = self.on_log
-        status_topic = 'state/{}'.format(self.name)
-        self.mqtt_client.will_set(status_topic, json.dumps({"connected": False}), retain=True)
-        self.mqtt_client.connect_async(broker_ip, port, 60)
-        self.mqtt_client.loop_start()
 
-    @classmethod
-    def on_log(cls, client, userdata, level, buf) -> None:
-        pass
-        """The callback to log all MQTT information"""
-        # print("\nlog: ", buf)
+        self._hostname = hostname
+        self._port = port
+        self._username = username
+        self._password = password
 
-    @classmethod
-    def on_disconnect(cls, client, userdata, msg) -> None:
-        print("Disconnected")
-        """The callback called when user is disconnected from the broker."""
-        print("Disconnected from broker")
+        self._client = Client(hostname, port, username=username, password=password)
 
-    def on_connect(self, client, userdata, flags, rc) -> None:
-        """ The callback for when the client receives a CONNACK response. """
-        print("Connected with result code", str(rc))
-        # Subscribing in on_connect() means that if we lose the connection and
-        # reconnect then subscriptions will be renewed.
-        client.subscribe('new_settings')
-        client.subscribe('signals')
-        client.subscribe('sensors/manager')
-        self.subscribe(client)
+    async def __aenter__(self):
+        self._client = await self._client.__aenter__()
+        return self
 
-        """ Il sensore pubblica un json `{"connected": True}`quando si connette """
-        status_topic = 'state/{}'.format(self.name)
-        self.mqtt_client.publish(status_topic, json.dumps({"connected": True}), retain=True)
-        self.publish_settings(self.settings)
-        self.publish_signals_list(self.signal_list)
+    async def __aexit__(self, exc_type, exc, tb):
+        await self._client.__aexit__(exc_type, exc, tb)
 
-    def on_message(self, client, userdata, msg: mqtt.MQTTMessage) -> None:
-        """The callback for when a PUBLISH message is received."""
-        # print(msg.topic + " " + str(msg.payload))
-        if msg.topic == 'new_settings'.format(self.name):
-            try:
-                if self.settings.new_settings(json.loads(msg.payload)):
-                    self.publish_settings(self.settings)
-                    self.message_handler('signals', 'settings_updated'.encode('utf-8'))
-            except Exception as e:
-                print(e)
+    def _get_client(self):
+        return self._client
+
+    async def publish(self, topic: str, message: str):
+        """Publish a messege into a MQTT topic
+
+        :param topic: MQTT topic
+        :param message: message to write
+        """
+
+        await self._client.publish(topic, payload=message.encode())
+
+    async def subscribe(self, topic: str or list):
+        """Read messeges of a topic from an async iterator
+
+        :param topic: MQTT topic, can be a list of topic
+        """
+
+        if isinstance(topic, str):
+            await self._client.subscribe(f"{topic}/#")
+            return self._client.unfiltered_messages()
         else:
-            self.handle_message(client, msg)
+            for t in topic:
+                await self._client.subscribe(f"{t}/#")
+            return self._client.unfiltered_messages()
 
-    @abc.abstractmethod
-    def subscribe(self, client) -> None:
-        pass
+    async def sensor_publish(
+        self,
+        sensor: str,
+        data: str or int or float = None,
+    ):
+        """Publish a messege into a sensor topic
 
-    @abc.abstractmethod
-    def publish(self, message) -> None:
-        pass
+        :param data: data to write to the topic
+        :param sensor: specific sensor of the module, can be of the format <module>/<sensor>
+        """
 
-    """ Invio i settings del sensore/consumer """
-    def publish_settings(self, settings: CommonSettings) -> None:
-        self.settings = settings
-        status_topic = 'settings/{}'.format(self.name)
-        self.mqtt_client.publish(status_topic, json.dumps(settings.values), retain=True)
+        if not isinstance(data, str):
+            data = str(data)
 
-    """ Invio la lista dei signal del sensore/consumer """
-    def publish_signals_list(self, signal_list: List[str]) -> None:
-        self.signal_list = signal_list
-        status_topic = 'signals_list/{}'.format(self.name)
-        self.mqtt_client.publish(status_topic, str(signal_list), retain=True)
+        await self.publish(f"sensors/{sensor}", data)
 
-    """ > Un sensore pubblica un json con il messaggio che vuole mandare """
-    def publish_message(self, message: Message) -> None:
-        status_topic = 'messages/{}'.format(self.name)
-        self.mqtt_client.publish(status_topic, json.dumps(message.values), retain=True)
+    async def sensor_subscribe(self, sensor: str or list = None):
+        """Read messeges of a sensor topic
 
-    """ > Un sensore pubblica un json con l'alert che vuole mandare """
-    def publish_alert(self, message) -> None:
-        status_topic = 'alerts/{}'.format(self.name)
-        self.mqtt_client.publish(status_topic, json.dumps(message.values), retain=True)
+        :param sensor: specific sensor of the module, can be of the format <module>/<sensor>
+        """
 
-    """ Gestisco i risultati delle subscribe"""
-    def handle_message(self, client, msg: mqtt.MQTTMessage) -> None:
-        self.message_handler(msg.topic, msg.payload)
+        if not sensor:
+            # subscribe to all sensors
 
+            return await self.subscribe("sensors")
+        elif isinstance(sensor, list):
+            # substcibe to a subset of sensors
 
-class MqttSensor(Mqtt):
-    """ Un sensore effettua la subscribe alle impostazioni e ai suoi segnali."""
-    def subscribe(self, client) -> None:
-        pass
+            sensors = [f"sensors/{s}" for s in sensor]
+            return await self.subscribe(sensors)
+        else:
+            # subscrive to only one sensor
 
-    """ Invio il dato del sensore """
-    def publish(self, message: str) -> None:
-        status_topic = 'sensors/{}'.format(self.name)
-        self.mqtt_client.publish(status_topic, message, retain=False)
+            return await self.subscribe(f"sensors/{sensor}")
 
 
-class MqttConsumer(MqttSensor):
-    def __init__(self,
-                 broker_ip: str,
-                 port: int,
-                 name: str,
-                 topics: List[str],
-                 signal_list: List[str],
-                 settings: CommonSettings,
-                 message_handler):
-        super(MqttConsumer, self).__init__(broker_ip, port, name, signal_list, settings, message_handler)
-        self.topics = topics
+class Message:
+    """Decoder class for client messages"""
 
-    """ Un consumer effettua la subscribe alle impostazioni e ai sensori a cui è interessato."""
-    def subscribe(self, client) -> None:
-        for topic in self.topics:
-            if topic == "messages":
-                client.subscribe('messages')
-            else:
-                client.subscribe('sensors/{}'.format(topic))
+    def __init__(self, msg):
+        self._raw_message = msg
+        self._topic = msg.topic
+        self._value = msg.payload.decode()
 
-    def subscribe_messages(self):
-        print(str(self.mqtt_client))
-        self.mqtt_client.subscribe('messages')
+    @property
+    def sensor(self):
+        return "/".join(self._topic.split("/")[1:])
 
+    @property
+    def module(self):
+        fields = self._topic.split("/")
 
-class MqttRemote(MqttConsumer):
-    def __init__(self,
-                 broker_ip: str,
-                 port: int,
-                 name: str,
-                 topics: List[str],
-                 signal_list: List[str],
-                 settings: CommonSettings,
-                 message_handler):
-        super(MqttRemote, self).__init__(broker_ip, port, name, topics, signal_list, settings, message_handler)
+        if len(fields) > 2:
+            return fields[1]
 
-    """ Un remote controller effettua la subscribe alle impostazioni,
-     ai sensori a cui è interessato e alle notifiche."""
-    def subscribe(self, client) -> None:
-        super().subscribe(client)
-        client.subscribe('settings/#')
-        client.subscribe('alerts/#')
-        client.subscribe('signals_list/#')
+        return None
 
-    def publish_signal(self, signal: str) -> None:
-        status_topic = 'signals'
-        self.mqtt_client.publish(status_topic, signal, retain=False)
+    @property
+    def value(self):
+        # transform into int
+        if self._value.isdigit():
+            return int(self._value)
 
-    def publish_new_settings(self, message: dict) -> None:
-        self.mqtt_client.publish('new_settings', json.dumps(message), retain=False)
+        # transform into float
+        try:
+            return float(self._value)
+        except:
+            pass
 
-    def handle_message(self, client, msg: mqtt.MQTTMessage) -> None:
-        self.message_handler(msg.topic, msg.payload)
-
-    """ Invio il dato del sensore remoto"""
-    def publish_data(self, sensor_name: str, message: str) -> None:
-        status_topic = 'sensors/{}'.format(sensor_name)
-        self.mqtt_client.publish(status_topic, message, retain=False)
-
-
-class MqttMessage(Mqtt):
-    """ Un sensore effettua la subscribe alle impostazioni e ai suoi segnali."""
-    def subscribe(self, client) -> None:
-        client.subscribe('messages/#')
-
-    """ Invio il dato del sensore """
-    def publish(self, message: dict) -> None:
-        status_topic = 'messages'
-        self.mqtt_client.publish(status_topic, json.dumps(message), retain=False)
-
+        # return the string
+        return self._value
