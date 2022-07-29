@@ -71,6 +71,24 @@ class Mqtt:
 
         await self.publish(f"sensors/{sensor}", data)
 
+
+    async def sensor_publish_online(
+        self,
+        bike: str,
+        sensor: str,
+        data: str or int or float = None,
+    ):
+        """Publish a message into a sensor topic on online server
+        :param data: data to write to the topic
+        :param sensor: specific sensor of the module, can be of the format <module>/<sensor>
+        """
+
+        if not isinstance(data, str):
+            data = str(data)
+
+        await self.publish(f"bikes/{bike}/sensors/{sensor}", data)
+
+
     async def sensor_subscribe(self, sensor: str or list = None):
         """Read messeges of a sensor topic
 
