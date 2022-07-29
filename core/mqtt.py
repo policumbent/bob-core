@@ -72,7 +72,7 @@ class Mqtt:
         await self.publish(f"sensors/{sensor}", data)
 
 
-    async def sensor_publish_online(
+    async def remote_sensor_publish(
         self,
         bike: str,
         sensor: str,
