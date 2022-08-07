@@ -20,7 +20,7 @@ class SqliteType:
             return True
         elif self._value == "integer" and isinstance(__x, int):
             return True
-        elif self._value == "real" and isinstance(__x, float):
+        elif self._value == "real" and (isinstance(__x, float) or isinstance(__x, int)):
             return True
         elif self._value == "datetime" and isinstance(__x, str):
             return True

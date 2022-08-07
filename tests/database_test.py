@@ -72,7 +72,7 @@ class TestDatabase:
 
         assert self.db._check_insert_data("test", wrong_data) == False
 
-        # wrong type of `str_filed`, must be `str` is `int`
+        # wrong type of `str_field`, must be `str` is `int`
         wrong_type_data = {
             "timestamp": "1.001",
             "str_field": 12,
@@ -81,22 +81,35 @@ class TestDatabase:
         }
         assert self.db._check_insert_data("test", wrong_type_data) == False
 
-        # wrong type of `float_filed`, must be `float` is `int`
+        # wrong type of `int_field`, must be `int` is `float`
         wrong_type_data = {
+            "timestamp": "1.001",
+            "str_field": "ciao",
+            "int_field": 1.0,
+            "float_field": 1,
+        }
+        assert self.db._check_insert_data("test", wrong_type_data) == False
+
+        # a `float_field` can have a int value
+        data = {
             "timestamp": "1.001",
             "str_field": "ciao",
             "int_field": 1,
             "float_field": 1,
         }
-        assert self.db._check_insert_data("test", wrong_type_data) == False
+        assert self.db._check_insert_data("test", data) == True
 
     def test_insert_data(self):
-        d = self.data
+        first = self.data
 
-        self.db.insert_data(d)
-        read = self.db.select()
+        self.db.insert_data(first)
 
-        assert read == [d]
+        assert self.db.select() == [first]
+
+        second = (time.human_timestamp(), "ciao", 1, 1)
+        self.db.insert_data(second)
+
+        assert self.db.select() == [first, second]
 
     def test_insert_data_fail(self):
         # generic exception due error table parameter
