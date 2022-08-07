@@ -174,3 +174,27 @@ class TestDatabase:
 
         assert conf == g_conf
         assert video == {**g_conf, **v_conf}
+
+    def test_nested_config(self):
+        g_conf = {"name": "phoenix", "circunference": 1450}
+        a_conf = {
+            "taurusx": {"hall_id": 49, "hall_type": 120, "hr_id": 444},
+            "phoenix": {"hall_id": 50, "hall_type": 120, "hr_id": 670},
+            "cerberus": {"hall_id": 51, "hall_type": 120, "hr_id": 760},
+        }
+
+        self.db._db.execute("CREATE TABLE configuration(module STR, value BLOB)")
+        self.db._db.execute(
+            "INSERT INTO configuration VALUES (?, ?)",
+            ["global", str(g_conf)],
+        )
+        self.db._db.execute(
+            "INSERT INTO configuration VALUES (?, ?)",
+            ["ant", str(a_conf)],
+        )
+
+        conf = self.db.config("ant")
+
+        assert conf == {**g_conf, **a_conf}
+        assert conf.get("phoenix") == a_conf.get("phoenix")
+        assert conf.get("kerberos") is None
