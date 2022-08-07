@@ -4,6 +4,7 @@ import re
 from .database import *
 from .exceptions import *
 from .time import *
+from .utils import *
 
 from .log import log
 from .mqtt import Mqtt
@@ -13,6 +14,7 @@ __all__ = [
     "mqtt",
     "exceptions",
     "database",
+    "utils",
     # export class
     "Mqtt",
     "log",
