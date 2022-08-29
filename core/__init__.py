@@ -28,4 +28,4 @@ try:
             r'^version\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE
         ).group(1)
 except FileNotFoundError:
-    __version__ = "0.3.1"
+    __version__ = "0.3.2"
