@@ -121,8 +121,7 @@ class Database:
 
         **This is the hig level insert with table fields type checking**
 
-        :param table: name of the table to write
-        :param data: ordered list with the data to write
+        :param data: ordered iterable with the data to write
         """
 
         if self._table is None or data is None:
@@ -130,6 +129,9 @@ class Database:
 
         if not self._check_insert_data(self._table, data):
             raise exceptions.DatabaseDataError
+
+        if isinstance(data, dict):
+            data = tuple(data.values())
 
         self.insert(self._table, data)
 

@@ -106,10 +106,19 @@ class TestDatabase:
 
         assert self.db.select() == [first]
 
-        second = (time.human_timestamp(), "ciao", 1, 1)
+        second = [time.human_timestamp(), "ciao", 1, 1.0]
         self.db.insert_data(second)
 
-        assert self.db.select() == [first, second]
+        assert self.db.select() == [first, tuple(second)]
+
+        third = {
+            "timestamp": time.human_timestamp(),
+            "str_field": "ciao",
+            "int_field": 1,
+            "float_field": 1.0,
+        }
+        self.db.insert_data(third)
+        assert self.db.select() == [first, tuple(second), tuple(third.values())]
 
     def test_insert_data_fail(self):
         # generic exception due error table parameter
