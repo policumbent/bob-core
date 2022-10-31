@@ -1,5 +1,5 @@
 from asyncio_mqtt import Client
-
+from json import dumps
 
 class Mqtt:
     """Class for modules IPC with mqtt message broker"""
@@ -70,6 +70,24 @@ class Mqtt:
             data = str(data)
 
         await self.publish(f"sensors/{sensor}", data)
+
+
+    async def remote_sensor_publish(
+        self,
+        bike: str,
+        sensor: str,
+        data: dict
+    ):
+        """Publish a message into a sensor topic on online server
+        :param data: data to write to the topic
+        :param sensor: specific sensor of the module, can be of the format <module>/<sensor>
+        """
+
+        if not isinstance(data, str):
+            data = str(data)
+
+        await self.publish(f"bikes/{bike}/sensors/{sensor}", dumps(data))
+
 
     async def sensor_subscribe(self, sensor: str or list = None):
         """Read messeges of a sensor topic
