@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "policumbent-bob-core"
-version = "0.3.3"
+version = "0.3.2"
 description = "BOB common files"
 authors = ["Gabriele Belluardo <gabriele.belluardo@outlook.it>", "Stefano Loscalzo <stefano.loscalzo@gmail.com>"]
 license = "LGPL-3.0-or-later"
